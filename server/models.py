@@ -29,6 +29,14 @@ class Animal(db.Model):
 
     def __repr__(self):
         return f'<Animal {self.name}, a {self.species}>'
+    
+class AnimalSchema(Schema):
+    id = fields.Integer(dump_only=True)
+    name = fields.String()
+    species = fields.String()
+    
+    zookeeper = fields.Nested(lambda:ZookeeperSchema(exclude=('animals',)))
+    enclosure = fields.Nested(lambda:EnclosureSchema(exclude=('animals',)))
 
 
 class Zookeeper(db.Model):
@@ -39,7 +47,13 @@ class Zookeeper(db.Model):
     birthday = db.Column(db.Date)
 
     animals = db.relationship('Animal', back_populates='zookeeper')
-
+    
+class ZookeeperSchema(Schema):
+    id = fields.Integer(dump_only=True)
+    name = fields.String()
+    birthday = fields.Date()
+    
+    animals = fields.List(fields.Nested(AnimalSchema(exclude=('zookeeper',))))
 
 class Enclosure(db.Model):
     __tablename__ = 'enclosures'
@@ -49,3 +63,10 @@ class Enclosure(db.Model):
     open_to_visitors = db.Column(db.Boolean)
 
     animals = db.relationship('Animal', back_populates='enclosure')
+    
+class EnclosureSchema(Schema):
+    id = fields.Integer(dump_only=True)
+    environment = fields.String()
+    open_to_visitors = fields.Boolean()
+    
+    animals = fields.List(fields.Nested(AnimalSchema(exclude=('enclosure',))))
